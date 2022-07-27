@@ -1,0 +1,14 @@
+version: '3.7'
+
+services:
+
+  craft-vue:
+    container_name: vue-start
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+    volumes:
+      - '.:/app'
+      - '/app/node_modules'
+    ports:
+      - '80:80'
