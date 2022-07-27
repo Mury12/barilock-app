@@ -18,7 +18,7 @@
         <b-col
           cols="2"
           v-for="(table, index) in tables"
-          :key="table?.name || index"
+          :key="index + customers.length"
         >
           <div
             class="
@@ -32,7 +32,7 @@
             :class="{ occupied: table?.name }"
           >
             <div class="d-flex flex-column">
-              {{ index }}<br />
+              {{ index + 1 }}<br />
               <small>{{ table?.name }}</small>
             </div>
           </div>
@@ -40,9 +40,8 @@
       </b-row>
     </b-col>
     <b-modal
-      v-if="selectedTable"
       id="table-modal"
-      :title="`${selectedTable.id} - ${selectedTable.name}`"
+      :title="`${selectedTable?.id} - ${selectedTable?.name}`"
     >
       {{ selectedTable }}
     </b-modal>
