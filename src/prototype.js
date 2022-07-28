@@ -1,16 +1,15 @@
-import Vue from 'vue'
-import BootstrapVue from 'bootstrap-vue';
-import VueTheMask from 'vue-the-mask';
-import VueSession from 'vue-session';
-import PageTitle from './components/PageTitle/PageTitle.vue';
-import VueScrollTo from 'vue-scrollto'
-import moment from 'moment'
-import Axios from 'axios';
+import Vue from "vue";
+import BootstrapVue from "bootstrap-vue";
+import VueTheMask from "vue-the-mask";
+import VueSession from "vue-session";
+import PageTitle from "./components/PageTitle/PageTitle.vue";
+import VueScrollTo from "vue-scrollto";
+import moment from "moment";
+import Axios from "axios";
 
-let wsr = require('../ws-routes.js').default;
+let wsr = require("../ws-routes.js").default;
 
-Vue
-  .use(VueSession, { persist: true })
+Vue.use(VueSession, { persist: true })
   .use(VueTheMask)
   .use(BootstrapVue)
   .use(VueScrollTo, {
@@ -24,19 +23,19 @@ Vue
     onDone: false,
     onCancel: false,
     x: false,
-    y: true
-  })
+    y: true,
+  });
 
-Vue.component('page-title', PageTitle);
+Vue.component("page-title", PageTitle);
 
 /**
  * Perform http requests.
- * 
- * @method get {Promise<any>} 
- * @method put {Promise<any>} 
- * @method post {Promise<any>} 
- * @method patch {Promise<any>} 
- * @method delete {Promise<any>} 
+ *
+ * @method get {Promise<any>}
+ * @method put {Promise<any>}
+ * @method post {Promise<any>}
+ * @method patch {Promise<any>}
+ * @method delete {Promise<any>}
  */
 Vue.prototype.$http = {
   /**
@@ -45,12 +44,8 @@ Vue.prototype.$http = {
    * @param {*} data body
    */
   post: async (url, data) => {
-    try {
-      const result = await Axios.post(url, data);
-      return result.data;
-    } catch (error) {
-      return error.response;
-    }
+    const result = await Axios.post(url, data);
+    return result.data;
   },
 
   /**
@@ -59,12 +54,8 @@ Vue.prototype.$http = {
    * @param {*} data body
    */
   put: async (url, data) => {
-    try {
-      const result = await Axios.put(url, data,);
-      return result.data;
-    } catch (error) {
-      return error.response;
-    }
+    const result = await Axios.put(url, data);
+    return result.data;
   },
 
   /**
@@ -73,14 +64,10 @@ Vue.prototype.$http = {
    * @param {*} params query params
    */
   get: async (url, params = {}) => {
-    try {
-      const result = await Axios.get(url, {
-        params
-      });
-      return result.data;
-    } catch (error) {
-      return error.response;
-    }
+    const result = await Axios.get(url, {
+      params,
+    });
+    return result.data;
   },
 
   /**
@@ -89,14 +76,10 @@ Vue.prototype.$http = {
    * @param {*} params query params
    */
   del: async (url, params = {}) => {
-    try {
-      const result = await Axios.delete(url, {
-        params
-      });
-      return result.data;
-    } catch (error) {
-      return error.response.data;
-    }
+    const result = await Axios.delete(url, {
+      params,
+    });
+    return result.data;
   },
 
   /**
@@ -105,51 +88,46 @@ Vue.prototype.$http = {
    * @param {*} data body
    */
   patch: async (url, data) => {
-    try {
-      const result = await Axios.patch(url, data);
-      return result.data;
-    } catch (error) {
-      return error.response;
-    }
-  }
-}
-
+    const result = await Axios.patch(url, data);
+    return result.data;
+  },
+};
 
 Vue.prototype.$cookie = {
   /**
    * Set a cookie
-   * @param {string} name 
-   * @param {string} value 
+   * @param {string} name
+   * @param {string} value
    */
   set: (name, value) => {
-    document.cookie = `${name}=${value}`
+    document.cookie = `${name}=${value}`;
   },
   /**
    * Get cookie by name
-   * @param {string} name 
+   * @param {string} name
    */
   get: (name) => {
     var c = document.cookie;
     var r = c.split(name)[1];
     if (r) {
-      r = (r.split(';')[0]).split('=');
+      r = r.split(";")[0].split("=");
       return r[1];
     }
-    return false
+    return false;
   },
   /**
    * Unset a cookie
-   * @param {string} name 
+   * @param {string} name
    */
   destroy: (name) => {
-    document.cookie = `${name}=${null}`
-  }
-}
+    document.cookie = `${name}=${null}`;
+  },
+};
 
 /**
  * Parses an object using a reference model.
  * Useful if you want fields *exactly* equals the reference.
- * 
+ *
  * @param {Object} model a reference model
  * @param {Object} data the desired data
  * @returns {Object}
@@ -176,15 +154,14 @@ Vue.prototype.$util = {
 
   $timeDiff: (start, end) => {
     const date1 = new Date(moment(start).format("YYYY/MM/DD hh:mm:ss"));
-    let date2 = new Date(moment().subtract(3, 'hours'));
-    if (end)
-      date2 = new Date(moment(end).format("YYYY/MM/DD hh:mm:ss"));
+    let date2 = new Date(moment().subtract(3, "hours"));
+    if (end) date2 = new Date(moment(end).format("YYYY/MM/DD hh:mm:ss"));
 
     let diffTime = Math.abs(date2 - date1);
 
-    let seconds = Math.floor((diffTime / 1000) % 60)
-    let minutes = Math.floor((diffTime / (1000 * 60)) % 60)
-    let hours = Math.floor((diffTime / (1000 * 60 * 60)))
+    let seconds = Math.floor((diffTime / 1000) % 60);
+    let minutes = Math.floor((diffTime / (1000 * 60)) % 60);
+    let hours = Math.floor(diffTime / (1000 * 60 * 60));
 
     hours = hours < 10 ? "0" + hours : hours;
     minutes = minutes < 10 ? "0" + minutes : minutes;
@@ -194,14 +171,14 @@ Vue.prototype.$util = {
   },
   /**
    * Standarizes responses from inside the application to match webservice responses.
-   * @param {string} message 
-   * @param {boolean} error 
+   * @param {string} message
+   * @param {boolean} error
    */
   respond: function (message, error = false) {
     return {
       success: !error,
-      status: message
-    }
+      status: message,
+    };
   },
 
   /**
@@ -217,7 +194,7 @@ Vue.prototype.$util = {
       variant: success ? "success" : "danger",
     });
   },
-}
+};
 
 /**
  * Loads and mounts URIs based in ws-routes.js file
@@ -228,16 +205,15 @@ Vue.prototype.$util = {
 Vue.prototype.$ws = (domain, name = "BASE", opts) => {
   domain = domain.toUpperCase();
   name = name.toUpperCase() || "";
-  if (domain === 'BASE') {
-    return wsr.WS.URL
+  if (domain === "BASE") {
+    return wsr.WS.URL;
   }
   if (opts && opts.length) {
     const route = wsr.WS[domain][name];
-    if (typeof route === 'function')
-      return wsr.WS.URL + route(...opts)
+    if (typeof route === "function") return wsr.WS.URL + route(...opts);
   }
-  return wsr.WS.URL + wsr.WS[domain][name]
-}
+  return wsr.WS.URL + wsr.WS[domain][name];
+};
 
 Vue.prototype.$promise = {
   /**
@@ -246,34 +222,32 @@ Vue.prototype.$promise = {
    * @param {number} tries number of tries
    */
   do: async (fn, tries = 3) => {
-    if (typeof fn !== 'function')
-      throw new TypeError(`Expected fn to be function, given ${typeof fn} instead`);
+    if (typeof fn !== "function")
+      throw new TypeError(
+        `Expected fn to be function, given ${typeof fn} instead`
+      );
     return new Promise((resolve, reject) => {
-
       let t = tries;
       if (t === 0) {
-        reject('Maximum tries exceeded');
+        reject("Maximum tries exceeded");
         return;
       }
       try {
         setTimeout(async () => {
           const result = await fn();
-          if (result && result.success)
-            resolve(result);
+          if (result && result.success) resolve(result);
           else
             setTimeout(() => {
               resolve(Vue.prototype.$http.refetch(fn, --t));
-            }, 350)
-        }, 1)
+            }, 350);
+        }, 1);
       } catch (error) {
         setTimeout(() => {
           resolve(Vue.prototype.$http.refetch(fn, --t));
-        }, 350)
+        }, 350);
       }
     });
-  }
-}
+  },
+};
 
 export default Vue;
-
-

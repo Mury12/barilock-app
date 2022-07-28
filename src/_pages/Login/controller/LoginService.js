@@ -1,6 +1,6 @@
 import Vue from "../../../prototype";
-import { user } from "../../../models/user";
 import Axios from "axios";
+import { user } from "../../../models/user";
 
 const LoginService = new Vue({
   data: {
@@ -8,21 +8,14 @@ const LoginService = new Vue({
   },
   methods: {
     do: async function (username, password) {
-      try {
-        const result = await this.$http.post(this.$ws("USER", "LOGIN"), {
-          username,
-          password,
-        });
-
-        if ("token" in result) {
-          this.$session.set("@app:user", JSON.stringify(result));
-          this.$session.set("@app:token", JSON.stringify(result.token));
-          Axios.defaults.headers.Authorization = result.token;
-          return this.$util.respond(user);
-        }
-      } catch (err) {
-        return this.$util.respond(err.response.data, true);
-      }
+      const result = await this.$http.post(this.$ws("USER", "LOGIN"), {
+        username,
+        password,
+      });
+      this.$session.set("@app:user", JSON.stringify(result));
+      this.$session.set("@app:token", JSON.stringify(result.token));
+      Axios.defaults.headers.Authorization = result.token;
+      return this.$util.respond(user);
     },
     done: function () {
       this.$session.destroy();

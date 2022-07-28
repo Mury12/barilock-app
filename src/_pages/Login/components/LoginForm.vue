@@ -36,38 +36,39 @@ export default {
       password: "Anypass",
       request: {
         success: false,
-        msg: ""
-      }
+        msg: "",
+      },
     };
   },
   methods: {
-    auth: function() {
+    auth: async function () {
       if (this.request.onRequest) return;
       this.$root.onRequest = true;
       this.request.requested = false;
-      LoginService.do(this.username, this.password)
-        .then(res => {
-          if (res) {
-            this.request.success = res.success;
-            this.request.msg = res.msg;
-            this.$root.profile = res.user;
-            this.$root.authenticated = true;
-            if (res.success) {
-              this.$router.push("/home");
-            }
-          }
-        })
-        .finally(() => {
-          this.request.requested = true;
-          this.$root.onRequest = false;
-          this.$util.toast(this.request.msg, {
-            title: "Mensagem",
-            autoHideDelay: 5000,
-            appendToast: false,
-            variant: this.request.success ? "success" : "danger"
-          });
+      try {
+        const result = await LoginService.do(this.username, this.password);
+        if (result) {
+          this.request.success = result.success;
+          this.request.msg = result.msg;
+          this.$root.profile = result.user;
+          this.$root.authenticated = true;
+        }
+      } catch (error) {
+        this.$bvToast.toast(error.response.data.status.error, {
+          title: "Error",
+          variant: "danger",
         });
-    }
+      } finally {
+        this.request.requested = true;
+        this.$root.onRequest = false;
+        this.$util.toast(this.request.msg, {
+          title: "Mensagem",
+          autoHideDelay: 5000,
+          appendToast: false,
+          variant: this.request.success ? "success" : "danger",
+        });
+      }
+    },
   },
   beforeMount() {
     const auth = LoginService.check();
@@ -76,7 +77,7 @@ export default {
       this.$root.profile = auth.user;
       this.$router.push("/home");
     }
-  }
+  },
 };
 </script>
 
