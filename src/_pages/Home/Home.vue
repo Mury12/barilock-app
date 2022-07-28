@@ -5,11 +5,13 @@
       <h2>Meus Bares</h2>
       <div
         class="companies pointer"
-        v-for="(company, index) in companies"
+        v-for="company in companies"
         @click="selectCompany(company)"
-        :key="index"
+        :key="company.id"
       >
-        <h4>{{ company.name }}</h4>
+        <h4 :class="{ 'text-success': selectedCompany.id === company.id }">
+          {{ company.name }}
+        </h4>
         {{ company.description }}
       </div>
     </b-col>
@@ -45,45 +47,56 @@
         <b-col
           cols="2"
           v-for="(table, index) in filteredTables"
-          :key="index + customers.length"
+          :key="table.id || index + customers.length + selectedCompany.id"
         >
           <div
             class="
               c-table
+              my-1
               pointer
               d-flex
               align-items-center
               justify-content-center
             "
-            @click="selectTable(table)"
+            @click="selectTable(index)"
             :class="{ occupied: table?.name }"
           >
             <div class="d-flex flex-column">
-              {{ table?.tableNum || index + 1 }}<br />
+              {{ table?.tableNum }}<br />
               <small>{{ table?.name }}</small>
             </div>
           </div>
         </b-col>
       </b-row>
     </b-col>
+
+    <b-modal id="new-customer-modal">
+      <b-form @submit.prevent="createCustomer">
+        <label for="customer-name">Name</label><br />
+        <b-input name="customer-name" required v-model="customer.name" />
+        <br />
+        <b-button type="submit" variant="success">Enviar</b-button>
+      </b-form>
+    </b-modal>
+
     <b-modal
       id="table-modal"
       size="xl"
-      :title="`${selectedTable?.id} - ${selectedTable?.name}`"
+      :title="`${getTable?.id} - ${getTable?.name}`"
     >
-      <b-row v-if="selectedTable">
+      <b-row v-if="getTable">
         <b-col cols="2" class="d-flex flex-column text-left">
           <b-button variant="success" class="mb-3"> Fazer pedido </b-button>
           <b-button variant="success"> Fechar comanda </b-button>
         </b-col>
         <b-col cols="4">
-          <p>Mesa: {{ selectedTable.tableNum }}</p>
-          <p>Cliente: {{ selectedTable.name }}</p>
-          <p>ID da comanda: {{ selectedTable.order.id }}</p>
-          <p>Estado: {{ selectedTable.order.status }}</p>
-          <p>Horário: {{ selectedTable.order.createdAt }}</p>
-          <p>Ultimo pedido: {{ selectedTable.order.updatedAt || "-" }}</p>
-          <p>Total: R${{ customerOrderTotal.toFixed(2) }}</p>
+          <p>Mesa: {{ getTable.tableNum }}</p>
+          <p>Cliente: {{ getTable.name }}</p>
+          <p>ID da comanda: {{ getTable.order.id }}</p>
+          <p>Estado: {{ getTable.order.status }}</p>
+          <p>Horário: {{ getTable.order.createdAt }}</p>
+          <p>Ultimo pedido: {{ getTable.order.updatedAt || "-" }}</p>
+          <p>Total: R${{ getTable.order.totalPrice }}</p>
         </b-col>
         <b-col cols="6">
           <h4>Itens na comanda</h4>
@@ -92,7 +105,7 @@
               responsive
               striped
               hover
-              :items="selectedTable.order.items"
+              :items="getTable.order.items"
               :fields="['name', 'amount', 'price', 'total', 'status']"
             >
             </b-table>
@@ -104,6 +117,7 @@
 </template>
 
 <script>
+import env from "../../../ws-routes";
 export default {
   name: "Home",
 
@@ -111,8 +125,13 @@ export default {
     return {
       companies: [],
       customers: [],
+      customer: {
+        name: "",
+        companyId: undefined,
+        tableNum: undefined,
+      },
       selectedCompany: undefined,
-      selectedTable: undefined,
+      selectedTable: -1,
       tables: [],
       filteredTables: [],
       search: "",
@@ -130,21 +149,39 @@ export default {
         .map((t, i) => ({ tableNum: String(i + 1) }));
       this.fetchCustomers(company.id);
     },
-    selectTable(table) {
-      if (table?.id) {
-        this.selectedTable = table;
+    selectTable(index) {
+      this.selectedTable = index;
+      if (this.getTable?.id) {
         this.$bvModal.show("table-modal");
-      } else this.$bvToast.toast("Esta mesa está vazia!", { variant: "warn" });
+      } else {
+        this.$bvModal.show("new-customer-modal");
+      }
+    },
+    async createCustomer() {
+      try {
+        await this.$http.post(env.WS.CUSTOMER.BASE, this.customer);
+        this.$bvToast.toast("Cliente adicionado com sucesso.");
+        await this.fetchCustomers(this.customer.companyId);
+        this.$bvModal.hide("new-customer-modal");
+        const currentTable = this.selectedTable;
+        this.selectedTable = -1;
+        this.selectedTable = currentTable;
+        setTimeout(() => {
+          this.$bvModal.show("table-modal");
+        }, 200);
+      } catch (error) {
+        console.error(error);
+        this.$bvToast.toast("Erro ao criar cliente");
+      }
     },
     async fetchCompanies() {
-      const companies = await this.$http.get(
-        "http://192.168.123.101:8081/ws/v2/company"
-      );
+      const companies = await this.$http.get(env.WS.COMPANY.BASE);
       this.companies = companies;
+      if (!this.selectedCompany) this.selectCompany(companies[0]);
     },
     async fetchCustomers(companyId) {
       const customers = await this.$http.get(
-        `http://192.168.123.101:8081/ws/v2/company/${companyId}/customer`
+        env.WS.COMPANY.CUSTOMERS(companyId)
       );
       this.customers = customers;
 
@@ -186,6 +223,12 @@ export default {
     },
   },
   computed: {
+    getTable() {
+      if (~this.selectedTable && this.tables[this.selectedTable].id) {
+        return this.tables[this.selectedTable];
+      }
+      return undefined;
+    },
     customerOrderTotal() {
       if (this.selectedTable?.order?.items) {
         return [this.selectedTable?.order?.items]
@@ -211,6 +254,12 @@ export default {
         this.filterTables();
         this.searchTable();
       },
+    },
+    selectedTable() {
+      this.customer.tableNum = this.tables[this.selectedTable].tableNum;
+    },
+    selectedCompany() {
+      this.customer.companyId = this.selectedCompany.id;
     },
   },
   mounted() {

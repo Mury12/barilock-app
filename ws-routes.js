@@ -1,3 +1,6 @@
+import Axios from "axios";
+
+Axios.defaults.baseURL = "http://192.168.123.101:8081/ws/v2/";
 const env = {
   NODE_ENV: "production",
   VERSION: "v0.0.1-alpha",
@@ -7,12 +10,18 @@ const env = {
   WS: {
     URL: "http://192.168.123.101:8081/ws/v2/",
     USER: {
-      BASE: 'user/',
-      LOGIN: 'user/login',
+      BASE: "user",
+      LOGIN: "user/login",
     },
-    BP: {
-      SESSIONS: 'sessions/'
-    }
-  }
-}
+    CUSTOMER: {
+      BASE: "customer",
+      GET: (id) => `${env.WS.CUSTOMER.BASE}/${id}`,
+    },
+    COMPANY: {
+      BASE: "company",
+      GET: (id) => `${env.WS.COMPANY.BASE}/${id}`,
+      CUSTOMERS: (companyId) => `${env.WS.COMPANY.BASE}/${companyId}/customers`,
+    },
+  },
+};
 export default env;
