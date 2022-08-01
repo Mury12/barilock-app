@@ -21,6 +21,12 @@ const env = {
       BASE: "company",
       GET: (id) => `${env.WS.COMPANY.BASE}/${id}`,
       CUSTOMERS: (companyId) => `${env.WS.COMPANY.BASE}/${companyId}/customers`,
+      PRODUCTS: (companyId) => `${env.WS.COMPANY.BASE}/${companyId}/products`,
+      MENU: (companyId) => `${env.WS.COMPANY.BASE}/${companyId}/menu`,
+    },
+    ORDER: {
+      BASE: "order",
+      ADD_ITEM: (orderId) => `${env.WS.ORDER.BASE}/${orderId}`,
     },
   },
 };

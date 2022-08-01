@@ -82,21 +82,21 @@
     <b-modal
       id="table-modal"
       size="xl"
-      :title="`${getTable?.id} - ${getTable?.name}`"
+      :title="`${getTable()?.id} - ${getTable()?.name}`"
     >
-      <b-row v-if="getTable">
+      <b-row v-if="getTable()" :key="updateKey">
         <b-col cols="2" class="d-flex flex-column text-left">
           <b-button variant="success" class="mb-3"> Fazer pedido </b-button>
           <b-button variant="success"> Fechar comanda </b-button>
         </b-col>
         <b-col cols="4">
-          <p>Mesa: {{ getTable.tableNum }}</p>
-          <p>Cliente: {{ getTable.name }}</p>
-          <p>ID da comanda: {{ getTable.order.id }}</p>
-          <p>Estado: {{ getTable.order.status }}</p>
-          <p>Horário: {{ getTable.order.createdAt }}</p>
-          <p>Ultimo pedido: {{ getTable.order.updatedAt || "-" }}</p>
-          <p>Total: R${{ getTable.order.totalPrice }}</p>
+          <p>Mesa: {{ getTable().tableNum }}</p>
+          <p>Cliente: {{ getTable().name }}</p>
+          <p>ID da comanda: {{ getTable().order.id }}</p>
+          <p>Estado: {{ getTable().order.status }}</p>
+          <p>Horário: {{ getTable().order.createdAt }}</p>
+          <p>Ultimo pedido: {{ getTable().order.updatedAt || "-" }}</p>
+          <p>Total: R${{ getTable().order.totalPrice }}</p>
         </b-col>
         <b-col cols="6">
           <h4>Itens na comanda</h4>
@@ -105,11 +105,31 @@
               responsive
               striped
               hover
-              :items="getTable.order.items"
+              :items="getTable().order.items"
               :fields="['name', 'amount', 'price', 'total', 'status']"
             >
             </b-table>
           </div>
+
+          <h5>Adicionar item</h5>
+          <b-form @submit.prevent="addItem">
+            <b-select
+              value="0"
+              :options="getOptions"
+              v-model="order.menuItemId"
+            >
+              <option value="0" selected disabled>Selecione um item</option>
+            </b-select>
+            <label for="amount">Quantidade</label>
+            <b-input
+              value="1"
+              type="number"
+              name="amount"
+              v-model="order.amount"
+              min="1"
+            />
+            <b-button type="submit">Enviar</b-button>
+          </b-form>
         </b-col>
       </b-row>
     </b-modal>
@@ -123,8 +143,14 @@ export default {
 
   data() {
     return {
+      updateKey: 0,
       companies: [],
       customers: [],
+      products: [],
+      order: {
+        menuItemId: null,
+        amount: 1,
+      },
       customer: {
         name: "",
         companyId: undefined,
@@ -148,24 +174,46 @@ export default {
         .fill(undefined)
         .map((t, i) => ({ tableNum: String(i + 1) }));
       this.fetchCustomers(company.id);
+      this.fetchProducts(company.id);
     },
     selectTable(index) {
       this.selectedTable = index;
-      if (this.getTable?.id) {
+      if (this.getTable()?.id) {
         this.$bvModal.show("table-modal");
       } else {
         this.$bvModal.show("new-customer-modal");
       }
     },
+    async addItem() {
+      if (this.order.menuItemId && this.order.amount >= 1) {
+        await this.$http.post(
+          env.WS.ORDER.ADD_ITEM(this.getTable().order.id),
+          this.order
+        );
+        this.$bvToast.toast("Item adicionado", {
+          variant: "success",
+        });
+        this.fetchCustomers(this.selectedCompany.id);
+      } else {
+        this.$bvToast.toast("Precisa selecionar um item.", {
+          variant: "danger",
+        });
+      }
+    },
     async createCustomer() {
       try {
         await this.$http.post(env.WS.CUSTOMER.BASE, this.customer);
+
+        this.customer.name = "";
         this.$bvToast.toast("Cliente adicionado com sucesso.");
+
         await this.fetchCustomers(this.customer.companyId);
         this.$bvModal.hide("new-customer-modal");
+
         const currentTable = this.selectedTable;
         this.selectedTable = -1;
         this.selectedTable = currentTable;
+
         setTimeout(() => {
           this.$bvModal.show("table-modal");
         }, 200);
@@ -191,6 +239,10 @@ export default {
             this.tables[+customer.tableNum - 1] = customer;
           }
         });
+      this.updateKey++;
+    },
+    async fetchProducts(companyId) {
+      this.products = await this.$http.get(env.WS.COMPANY.MENU(companyId));
     },
     searchTable() {
       const search = this.search;
@@ -221,14 +273,21 @@ export default {
         );
       }
     },
-  },
-  computed: {
     getTable() {
       if (~this.selectedTable && this.tables[this.selectedTable].id) {
         return this.tables[this.selectedTable];
       }
       return undefined;
     },
+  },
+  computed: {
+    getOptions() {
+      return this.products.map((p) => ({
+        value: p.id,
+        text: `${p.product.name} - R$ ${p.price}`,
+      }));
+    },
+
     customerOrderTotal() {
       if (this.selectedTable?.order?.items) {
         return [this.selectedTable?.order?.items]
