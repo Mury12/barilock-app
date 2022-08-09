@@ -26,7 +26,7 @@ const env = {
     },
     ORDER: {
       BASE: "order",
-      ADD_ITEM: (orderId) => `${env.WS.ORDER.BASE}/${orderId}`,
+      BYID: (orderId) => `${env.WS.ORDER.BASE}/${orderId}`,
     },
   },
 };

@@ -46,8 +46,8 @@
         </b-col>
         <b-col
           cols="2"
-          v-for="(table, index) in filteredTables"
-          :key="table.id || index + customers.length + selectedCompany.id"
+          v-for="(table, index) in this.filteredTables"
+          :key="index + customers.length"
         >
           <div
             class="
@@ -58,36 +58,53 @@
               align-items-center
               justify-content-center
             "
-            @click="selectTable(index)"
+            @click="selectTable(table.tableNum - 1)"
             :class="{ occupied: table?.name }"
           >
             <div class="d-flex flex-column">
               {{ table?.tableNum }}<br />
-              <small>{{ table?.name }}</small>
+              <small>{{ table?.name || "Livre" }}</small>
             </div>
           </div>
         </b-col>
       </b-row>
     </b-col>
 
-    <b-modal id="new-customer-modal">
+    <b-modal
+      id="new-customer-modal"
+      hide-footer
+      :title="`Nº ${selectedTable + 1} - Abrir comanda`"
+    >
       <b-form @submit.prevent="createCustomer">
         <label for="customer-name">Name</label><br />
-        <b-input name="customer-name" required v-model="customer.name" />
+        <b-input
+          ref="customerNameInput"
+          name="customer-name"
+          required
+          v-model="customer.name"
+        />
+        <b-checkbox v-model="openOrderAfterInsert"
+          >Abrir comanda ao concluir</b-checkbox
+        >
         <br />
         <b-button type="submit" variant="success">Enviar</b-button>
       </b-form>
     </b-modal>
 
     <b-modal
+      hide-footer
       id="table-modal"
       size="xl"
-      :title="`${getTable()?.id} - ${getTable()?.name}`"
+      :title="`${getTable()?.id || ''} - ${getTable()?.name || ''}`"
     >
       <b-row v-if="getTable()" :key="updateKey">
         <b-col cols="2" class="d-flex flex-column text-left">
-          <b-button variant="success" class="mb-3"> Fazer pedido </b-button>
-          <b-button variant="success"> Fechar comanda </b-button>
+          <b-button
+            variant="success"
+            @click="$bvModal.show('close-order-modal')"
+          >
+            Fechar comanda
+          </b-button>
         </b-col>
         <b-col cols="4">
           <p>Mesa: {{ getTable().tableNum }}</p>
@@ -133,6 +150,15 @@
         </b-col>
       </b-row>
     </b-modal>
+
+    <b-modal hide-footer id="close-order-modal" title="Encerrar comanda">
+      <b-checkbox name="order-paid" v-model="orderIsPaid"
+        >Esta comanda foi paga</b-checkbox
+      >
+      <b-button variant="success" class="mt-3" @click="closeOrder"
+        >Enviar</b-button
+      >
+    </b-modal>
   </div>
 </template>
 
@@ -143,6 +169,8 @@ export default {
 
   data() {
     return {
+      orderIsPaid: true,
+      openOrderAfterInsert: true,
       updateKey: 0,
       companies: [],
       customers: [],
@@ -168,32 +196,67 @@ export default {
     };
   },
   methods: {
-    selectCompany(company) {
+    async closeOrder() {
+      try {
+        await this.$http.put(env.WS.ORDER.BYID(this.getTable().order.id), {
+          status: "closed",
+          paid: this.orderIsPaid,
+        });
+
+        this.$bvToast.toast(
+          `Comanda nº ${this.getTable().order.id} de ${
+            this.getTable().name
+          } foi finalizada como ${this.orderIsPaid ? "paga" : "não paga"}`,
+          {
+            title: "Sucesso",
+            variant: "success",
+          }
+        );
+
+        this.tables[this.selectedTable] = {
+          tableNum: String(this.selectedTable + 1),
+        };
+        await this.fetchCustomers(this.selectedCompany.id);
+        this.$bvModal.hide("close-order-modal");
+        this.$bvModal.hide("table-modal");
+        this.orderIsPaid = true;
+      } catch (error) {
+        this.$bvToast.toast(error.message, {
+          variant: "error",
+          title: "Erro",
+        });
+      }
+    },
+    async selectCompany(company) {
       this.selectedCompany = company;
       this.tables = new Array(+company.size)
         .fill(undefined)
-        .map((t, i) => ({ tableNum: String(i + 1) }));
-      this.fetchCustomers(company.id);
-      this.fetchProducts(company.id);
+        .map((_, i) => ({ tableNum: String(i + 1) }));
+      await this.fetchProducts(company.id);
+      await this.fetchCustomers(company.id);
     },
-    selectTable(index) {
-      this.selectedTable = index;
+    selectTable(tableNum) {
+      this.selectedTable = tableNum;
       if (this.getTable()?.id) {
         this.$bvModal.show("table-modal");
       } else {
         this.$bvModal.show("new-customer-modal");
+
+        setTimeout(() => {
+          this.$refs.customerNameInput.focus();
+        }, 100);
       }
     },
     async addItem() {
       if (this.order.menuItemId && this.order.amount >= 1) {
         await this.$http.post(
-          env.WS.ORDER.ADD_ITEM(this.getTable().order.id),
+          env.WS.ORDER.BYID(this.getTable().order.id),
           this.order
         );
         this.$bvToast.toast("Item adicionado", {
           variant: "success",
         });
-        this.fetchCustomers(this.selectedCompany.id);
+        await this.fetchCustomers(this.selectedCompany.id);
       } else {
         this.$bvToast.toast("Precisa selecionar um item.", {
           variant: "danger",
@@ -205,21 +268,28 @@ export default {
         await this.$http.post(env.WS.CUSTOMER.BASE, this.customer);
 
         this.customer.name = "";
-        this.$bvToast.toast("Cliente adicionado com sucesso.");
+        this.$bvToast.toast("Cliente adicionado com sucesso.", {
+          variant: "success",
+        });
 
-        await this.fetchCustomers(this.customer.companyId);
+        await this.fetchCustomers(this.selectedCompany.id);
+        this.refreshFilters();
         this.$bvModal.hide("new-customer-modal");
 
         const currentTable = this.selectedTable;
         this.selectedTable = -1;
         this.selectedTable = currentTable;
 
-        setTimeout(() => {
-          this.$bvModal.show("table-modal");
-        }, 200);
+        if (this.openOrderAfterInsert) {
+          setTimeout(() => {
+            this.$bvModal.show("table-modal");
+          }, 200);
+        }
       } catch (error) {
         console.error(error);
-        this.$bvToast.toast("Erro ao criar cliente");
+        this.$bvToast.toast("Erro ao criar cliente", {
+          variant: "error",
+        });
       }
     },
     async fetchCompanies() {
@@ -231,6 +301,7 @@ export default {
       const customers = await this.$http.get(
         env.WS.COMPANY.CUSTOMERS(companyId)
       );
+
       this.customers = customers;
 
       if (Array.isArray(customers))
@@ -240,6 +311,7 @@ export default {
           }
         });
       this.updateKey++;
+      this.filterTables();
     },
     async fetchProducts(companyId) {
       this.products = await this.$http.get(env.WS.COMPANY.MENU(companyId));
@@ -247,7 +319,7 @@ export default {
     searchTable() {
       const search = this.search;
       if (!search.length) {
-        this.filteredTables = this.tables;
+        this.filterTables();
       } else {
         this.filteredTables = this.filteredTables.filter((table, index) => {
           return (
@@ -265,7 +337,6 @@ export default {
         (filter.occupied && filter.available)
       ) {
         this.filteredTables = this.tables;
-        this.searchTable();
       } else {
         this.filteredTables = this.filteredTables.filter(
           (t) =>
@@ -279,6 +350,17 @@ export default {
       }
       return undefined;
     },
+    refreshFilters() {
+      const aux = { ...this.filter, search: this.search };
+      if (this.filter.occupied || this.filter.available) {
+        this.filter = {
+          occupied: aux.occupied,
+          available: aux.available,
+        };
+      } else {
+        this.searchTable();
+      }
+    },
   },
   computed: {
     getOptions() {
@@ -287,7 +369,6 @@ export default {
         text: `${p.product.name} - R$ ${p.price}`,
       }));
     },
-
     customerOrderTotal() {
       if (this.selectedTable?.order?.items) {
         return [this.selectedTable?.order?.items]
@@ -298,13 +379,13 @@ export default {
     },
   },
   watch: {
-    search(n, o) {
-      this.searchTable(n, o);
+    search() {
+      this.searchTable();
     },
     filter: {
       deep: true,
-      handler(n) {
-        this.filterTables(n);
+      handler() {
+        this.filterTables();
       },
     },
     tables: {
