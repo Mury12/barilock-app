@@ -2,18 +2,29 @@
 <template>
   <div class="w-100 d-flex">
     <b-col cols="3">
-      <h2>Meus Bares</h2>
-      <div
-        class="companies pointer"
-        v-for="company in companies"
-        @click="selectCompany(company)"
-        :key="company.id"
-      >
-        <h4 :class="{ 'text-success': selectedCompany.id === company.id }">
-          {{ company.name }}
-        </h4>
-        {{ company.description }}
-      </div>
+      <b-row>
+        <b-col cols="12">
+          <h2>Menu</h2>
+          <b-button variant="link"> Comandas fechadas</b-button>
+        </b-col>
+        <b-col cols="12">
+          <h4>Meus Bares</h4>
+          <div
+            class="companies pointer"
+            v-for="company in companies"
+            @click="selectCompany(company)"
+            :key="company.id"
+          >
+            <b-button
+              variant="link"
+              :class="{ 'text-success': selectedCompany.id === company.id }"
+            >
+              {{ company.name }}
+            </b-button>
+            {{ company.description }}
+          </div>
+        </b-col>
+      </b-row>
     </b-col>
     <b-col cols="9" class="tables">
       <b-row>
@@ -40,31 +51,70 @@
                 >
                   Vazias
                 </b-badge>
+                <b-badge
+                  :variant="filter.available ? 'info' : ''"
+                  @click="sortTables"
+                  class="pointer border rounded mt-2"
+                >
+                  Ordenar mesas
+                </b-badge>
               </div>
             </b-col>
           </b-row>
         </b-col>
-        <b-col
-          cols="2"
-          v-for="(table, index) in this.filteredTables"
-          :key="index + customers.length"
-        >
+        <b-col cols="12" class="table-wrapper">
           <div
+            v-for="(table, index) in this.filteredTables"
+            :key="index + customers.length"
+            style="width: 100px"
             class="
               c-table
-              my-1
               pointer
               d-flex
               align-items-center
               justify-content-center
             "
-            @click="selectTable(table.tableNum - 1)"
+            @click="selectTable(table.tableNum)"
             :class="{ occupied: table?.name }"
           >
             <div class="d-flex flex-column">
               {{ table?.tableNum }}<br />
               <small>{{ table?.name || "Livre" }}</small>
             </div>
+          </div>
+          <div
+            class="
+              d-flex
+              flex-column
+              c-table
+              bg-transparent
+              pointer
+              d-flex
+              justify-content-center
+              align-items-center
+            "
+            style="width: 100px"
+            v-if="canAddTable"
+            @click="addTable"
+          >
+            <fas icon="plus-circle" class="fa-2x text-success" /><br />
+          </div>
+          <div
+            class="
+              d-flex
+              flex-column
+              c-table
+              bg-transparent
+              pointer
+              d-flex
+              justify-content-center
+              align-items-center
+            "
+            style="width: 100px"
+            v-if="canRemoveTable"
+            @click="removeTable"
+          >
+            <fas icon="minus-circle" class="fa-2x text-danger" /><br />
           </div>
         </b-col>
       </b-row>
@@ -175,6 +225,7 @@ export default {
       companies: [],
       customers: [],
       products: [],
+      availableTables: [],
       order: {
         menuItemId: null,
         amount: 1,
@@ -227,16 +278,47 @@ export default {
         });
       }
     },
+    syncAvailableTables(tableNum) {
+      const tableIdx = this.availableTables.findIndex(
+        (num) => num === tableNum
+      );
+      if (~tableIdx) this.availableTables.splice(tableIdx, 1);
+    },
+    sortAvailableTables() {
+      this.availableTables.sort((a, b) => (a > b ? 1 : -1));
+    },
+    sortTables() {
+      this.tables = this.tables.sort((a, b) =>
+        a.tableNum > b.tableNum ? 1 : -1
+      );
+    },
+    removeTable() {
+      const removeIdx = this.tables.map((t) => t.name).lastIndexOf(undefined);
+      if (~removeIdx) {
+        this.availableTables.push(this.tables[removeIdx].tableNum);
+        this.tables.splice(removeIdx, 1);
+      }
+      this.sortAvailableTables();
+    },
+    addTable() {
+      this.tables.push({
+        tableNum: this.availableTables[0],
+      });
+      this.availableTables.shift();
+      this.sortAvailableTables();
+    },
     async selectCompany(company) {
       this.selectedCompany = company;
-      this.tables = new Array(+company.size)
-        .fill(undefined)
-        .map((_, i) => ({ tableNum: String(i + 1) }));
+      this.availableTables = new Array(+this.selectedCompany.size)
+        .fill(0)
+        .map((_, i) => i + 1);
       await this.fetchProducts(company.id);
       await this.fetchCustomers(company.id);
     },
     selectTable(tableNum) {
-      this.selectedTable = tableNum;
+      this.selectedTable = this.tables.findIndex(
+        (t) => t.tableNum === tableNum
+      );
       if (this.getTable()?.id) {
         this.$bvModal.show("table-modal");
       } else {
@@ -246,6 +328,18 @@ export default {
           this.$refs.customerNameInput.focus();
         }, 100);
       }
+    },
+    addOrUpdateCustomer(customer, sort = false) {
+      const customerIdx = this.tables.findIndex(
+        (t) => +t.tableNum === +customer.tableNum
+      );
+      console.debug(customerIdx, customer.tableNum, this.tables);
+      if (!~customerIdx) this.tables.push(customer);
+      else {
+        this.tables[customerIdx] = customer;
+      }
+      this.sortAvailableTables();
+      if (sort) this.sortTables();
     },
     async addItem() {
       if (this.order.menuItemId && this.order.amount >= 1) {
@@ -304,13 +398,16 @@ export default {
 
       this.customers = customers;
 
-      if (Array.isArray(customers))
+      if (Array.isArray(customers)) {
         customers.forEach((customer) => {
           if (customer.tableNum) {
-            this.tables[+customer.tableNum - 1] = customer;
+            this.addOrUpdateCustomer(customer);
+            this.syncAvailableTables(+customer.tableNum);
           }
         });
+      }
       this.updateKey++;
+      this.sortTables();
       this.filterTables();
     },
     async fetchProducts(companyId) {
@@ -377,11 +474,21 @@ export default {
       }
       return 0;
     },
+    canAddTable() {
+      return this.tables.length < this.selectedCompany?.size || 1e6;
+    },
+    canRemoveTable() {
+      return (
+        this.tables.length > 0 &&
+        this.tables.reduce((acc, t) => (acc += t.name ? 0 : 1), 0)
+      );
+    },
   },
   watch: {
     search() {
       this.searchTable();
     },
+
     filter: {
       deep: true,
       handler() {
@@ -409,6 +516,11 @@ export default {
 </script>
 
 <style scoped>
+.table-wrapper {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
 .c-table {
   background-color: rgb(0, 0, 0, 0.225);
   color: black;
