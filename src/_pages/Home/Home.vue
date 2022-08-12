@@ -82,40 +82,6 @@
               <small>{{ table?.name || "Livre" }}</small>
             </div>
           </div>
-          <div
-            class="
-              d-flex
-              flex-column
-              c-table
-              bg-transparent
-              pointer
-              d-flex
-              justify-content-center
-              align-items-center
-            "
-            style="width: 100px"
-            v-if="canAddTable"
-            @click="addTable"
-          >
-            <fas icon="plus-circle" class="fa-2x text-success" /><br />
-          </div>
-          <div
-            class="
-              d-flex
-              flex-column
-              c-table
-              bg-transparent
-              pointer
-              d-flex
-              justify-content-center
-              align-items-center
-            "
-            style="width: 100px"
-            v-if="canRemoveTable"
-            @click="removeTable"
-          >
-            <fas icon="minus-circle" class="fa-2x text-danger" /><br />
-          </div>
         </b-col>
       </b-row>
     </b-col>
@@ -209,6 +175,68 @@
         >Enviar</b-button
       >
     </b-modal>
+
+    <div
+      class="floating-menu position-fixed d-flex flex-column align-items-end"
+      style="bottom: 30px; right: 30px; z-index: 999"
+    >
+      <transition mode="out-in" name="fade">
+        <div class="floating-menu-content rounded card p-3" v-if="showingMenu">
+          <div
+            class="
+              d-flex
+              flex-column
+              c-table
+              bg-transparent
+              pointer
+              d-flex
+              justify-content-center
+              align-items-center
+              mb-2
+            "
+            :class="{ disabled: !canAddTable }"
+            style="width: 100px"
+            @click="canAddTable ? addTable() : null"
+          >
+            <fas icon="plus-circle" class="fa-2x text-success" /><br />
+          </div>
+          <div
+            class="
+              d-flex
+              flex-column
+              c-table
+              bg-transparent
+              pointer
+              d-flex
+              justify-content-center
+              align-items-center
+            "
+            :class="{ disabled: !canRemoveTable }"
+            style="width: 100px"
+            @click="canRemoveTable ? removeTable() : null"
+          >
+            <fas icon="minus-circle" class="fa-2x text-danger" /><br />
+          </div>
+        </div>
+      </transition>
+      <div
+        class="
+          floating-menu-icon
+          rounded-circle
+          pointer
+          bg-info
+          d-flex
+          justify-content-center
+          align-items-center
+          text-white
+          mt-2
+        "
+        style="width: 50px; height: 50px"
+        @click="showingMenu = !showingMenu"
+      >
+        <fas icon="cog" class="fa-2x" />
+      </div>
+    </div>
   </div>
 </template>
 
@@ -219,6 +247,7 @@ export default {
 
   data() {
     return {
+      showingMenu: false,
       orderIsPaid: true,
       openOrderAfterInsert: true,
       updateKey: 0,
@@ -475,7 +504,7 @@ export default {
       return 0;
     },
     canAddTable() {
-      return this.tables.length < this.selectedCompany?.size || 1e6;
+      return this.tables.length < (+this.selectedCompany?.size || 1e6);
     },
     canRemoveTable() {
       return (
@@ -507,6 +536,7 @@ export default {
     },
     selectedCompany() {
       this.customer.companyId = this.selectedCompany.id;
+      this.tables.splice(0);
     },
   },
   mounted() {
@@ -554,7 +584,10 @@ export default {
   background-size: contain;
   animation: ghost forwards 1s;
 }
-
+.disabled {
+  opacity: 0.5;
+  cursor: not-allowed !important;
+}
 @keyframes ghost {
   0% {
     opacity: 0;
