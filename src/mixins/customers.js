@@ -24,7 +24,6 @@ export default {
       const customerIdx = this.customers.findIndex(
         (t) => +t.tableNum === +customer.tableNum
       );
-      console.debug(customerIdx, customer.tableNum, this.customers);
       if (!~customerIdx) this.customers.push(customer);
       else {
         this.customers[customerIdx] = customer;

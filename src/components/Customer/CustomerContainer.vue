@@ -17,6 +17,11 @@
           :key="index"
           @select="selectCustomer"
         />
+        <menu-button
+          @click="addTable"
+          :enabled="canAddTable"
+          v-b-tooltip.right.hover="'Adicionar mesa'"
+        />
       </b-col>
     </b-row>
 
@@ -56,9 +61,10 @@
   import orders from "../../mixins/orders";
   import CreateCustomerModal from "./CreateCustomerModal.vue";
   import companies from "../../mixins/companies";
-  import FloatingMenu from "./FloatingMenu.vue";
+  import FloatingMenu from "../FloatingMenu/FloatingMenu.vue";
   import { mapStores } from "pinia";
   import { useMainStore } from "../../store";
+  import MenuButton from "../FloatingMenu/MenuButton.vue";
 
   export default {
     name: "CustomerContainer",
@@ -68,6 +74,7 @@
       OrderModal,
       CreateCustomerModal,
       FloatingMenu,
+      MenuButton,
     },
     mixins: [customers, orders, companies],
     data() {
@@ -108,7 +115,9 @@
       async company(company) {
         this.customer.companyId = company.id;
         this.customers.splice(0);
+        // TODO: use pinia
         this.selectCompany(company);
+        while (this.customers.length < 10) this.addTable();
         await this.fetchCustomers(company.id);
         this.mainStore.setCustomers(this.customers);
         await this.fetchProducts(company.id);

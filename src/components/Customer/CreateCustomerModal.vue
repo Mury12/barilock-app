@@ -50,7 +50,6 @@
     },
     watch: {
       index(index) {
-        console.debug(index);
         this.customer.tableNum = index;
         setTimeout(() => {
           this.$refs.customerNameInput?.focus();

@@ -17,6 +17,7 @@ export const useMainStore = defineStore("main", {
     getCompanies: (state) => state.companies,
     getCustomers: (state) => state.customers,
     getCurrentCompany: (state) => state.curCompany,
+    getCurrency: (state) => state.curCompany?.currency || "R$",
   },
   actions: {
     setCustomers(payload: Customer[]) {
