@@ -1,7 +1,7 @@
 import Vue from "./prototype";
 import VueRouter from "vue-router";
-import Home from "./_pages/Home/Home";
-import Login from "./_pages/Login/Login";
+import Home from "./views/Home/Home";
+import Login from "./views/Login/Login";
 let routes = [
   /** Auth needed (add meta.protected = true) */
   {

@@ -58,8 +58,8 @@
         this.mainStore.setProducts(this.products);
       },
       selectedCompany(n) {
-        this.mainStore.setCurrentCompany(n)
-      }
+        this.mainStore.setCurrentCompany(n);
+      },
     },
     mounted() {
       this.fetchCompanies();
