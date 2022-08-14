@@ -21,7 +21,8 @@ export default {
       if (!this.selectedCompany) this.selectCompany(companies[0]);
     },
     async fetchProducts(companyId) {
-      this.products = await this.$http.get(env.WS.COMPANY.MENU(companyId));
+      this.products =
+        (await this.$http.get(env.WS.COMPANY.MENU(companyId))) || [];
     },
   },
 };

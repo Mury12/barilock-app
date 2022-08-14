@@ -57,6 +57,8 @@
   import CreateCustomerModal from "./CreateCustomerModal.vue";
   import companies from "../../mixins/companies";
   import FloatingMenu from "./FloatingMenu.vue";
+  import { mapStores } from "pinia";
+  import { useMainStore } from "../../store";
 
   export default {
     name: "CustomerContainer",
@@ -97,17 +99,20 @@
         }
         return 0;
       },
+      ...mapStores(useMainStore),
     },
     watch: {
       search() {
         this.searchTable();
       },
-      company(company) {
+      async company(company) {
         this.customer.companyId = company.id;
         this.customers.splice(0);
         this.selectCompany(company);
-        this.fetchCustomers(company.id);
-        this.fetchProducts(company.id);
+        await this.fetchCustomers(company.id);
+        this.mainStore.setCustomers(this.customers);
+        await this.fetchProducts(company.id);
+        this.mainStore.setProducts(this.products);
       },
       filter: {
         deep: true,
@@ -115,7 +120,7 @@
           this.filterTables();
         },
       },
-      tables: {
+      customers: {
         deep: true,
         handler() {
           this.filterTables();
