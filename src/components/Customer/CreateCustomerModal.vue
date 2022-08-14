@@ -2,9 +2,9 @@
   <b-modal
     id="new-customer-modal"
     hide-footer
-    :title="`Nº ${index + 1} - Abrir comanda`"
+    :title="`Nº ${index} - Abrir comanda`"
   >
-    <b-form @submit.prevent="createCustomer">
+    <b-form @submit.prevent="addCustomer">
       <label for="customer-name">Name</label><br />
       <b-input
         ref="customerNameInput"
@@ -22,42 +22,45 @@
 </template>
 
 <script>
-import customers from "../../mixins/customers";
+  import customers from "../../mixins/customers";
 
-export default {
-  name: "CreateCustomerModal",
-  mixins: [customers],
-  data() {
-    return {};
-  },
-  props: {
-    openOrderAfterInsert: {
-      type: Boolean,
-      default: true,
+  export default {
+    name: "CreateCustomerModal",
+    mixins: [customers],
+    data() {
+      return {
+        openOrderAfterInsert: true,
+      };
     },
-    index: {
-      type: Number,
-      default: undefined,
+    props: {
+      index: {
+        type: Number,
+        default: undefined,
+      },
+      companyId: {
+        type: Number,
+        default: undefined,
+      },
     },
-    companyId: {
-      type: Number,
-      default: undefined,
+    methods: {
+      async addCustomer() {
+        await this.createCustomer();
+        this.$emit("created", this.companyId);
+      },
     },
-  },
-  watch: {
-    index(index) {
-      console.debug(index);
-      this.customer.tableNum = index;
-      setTimeout(() => {
-        this.$refs.customerNameInput?.focus();
-      }, 100);
+    watch: {
+      index(index) {
+        console.debug(index);
+        this.customer.tableNum = index;
+        setTimeout(() => {
+          this.$refs.customerNameInput?.focus();
+        }, 100);
+      },
     },
-  },
-  mounted() {
-    this.customer.companyId = this.companyId;
-  },
-};
+    mounted() {
+      this.customer.companyId = this.companyId;
+    },
+  };
 </script>
 
-<style>
-</style>
+<style></style>
