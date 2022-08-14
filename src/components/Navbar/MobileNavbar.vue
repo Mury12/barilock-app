@@ -33,7 +33,7 @@
 </template>
 
 <script>
-import LoginService from "../../views/Login/controller/LoginService";
+import LoginService from "@/common/LoginService";
 
 export default {
   data() {

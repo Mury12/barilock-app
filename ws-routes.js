@@ -32,3 +32,9 @@ const env = {
   },
 };
 export default env;
+
+/**
+ * Webservice routes
+ */
+const { WS: ws } = env;
+export { ws };
