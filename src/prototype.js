@@ -7,8 +7,6 @@ import VueScrollTo from "vue-scrollto";
 import moment from "moment";
 import Axios from "axios";
 
-let wsr = require("../ws-routes.js").default;
-
 Vue.use(VueSession, { persist: true })
   .use(VueTheMask)
   .use(BootstrapVue)
@@ -194,25 +192,6 @@ Vue.prototype.$util = {
       variant: success ? "success" : "danger",
     });
   },
-};
-
-/**
- * Loads and mounts URIs based in ws-routes.js file
- * @param {string} domain Route domain such as USER, COMPANY, etc.
- * @param {string} name route name
- * @param {*} opts route options if dynamic
- */
-Vue.prototype.$ws = (domain, name = "BASE", opts) => {
-  domain = domain.toUpperCase();
-  name = name.toUpperCase() || "";
-  if (domain === "BASE") {
-    return wsr.WS.URL;
-  }
-  if (opts && opts.length) {
-    const route = wsr.WS[domain][name];
-    if (typeof route === "function") return wsr.WS.URL + route(...opts);
-  }
-  return wsr.WS.URL + wsr.WS[domain][name];
 };
 
 Vue.prototype.$promise = {

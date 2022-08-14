@@ -3,59 +3,55 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "serve": "vue-cli-service serve",
-    "build": "vue-cli-service build",
-    "lint": "vue-cli-service lint"
+    "dev": "vite --port 8080",
+    "build": "vite build",
+    "serve": "vite preview",
+    "lint": "eslint --ext .js,.vue --ignore-path .gitignore --fix src"
   },
   "dependencies": {
     "@fortawesome/fontawesome-svg-core": "^6.1.2",
     "@fortawesome/free-solid-svg-icons": "^6.1.2",
     "@fortawesome/vue-fontawesome": "^2.0.8",
+    "@vitejs/plugin-vue": "^3.0.3",
+    "@vue/cli-plugin-babel": "^5.0.8",
     "axios": "^0.19.2",
     "bootstrap-vue": "^2.15.0",
     "colorette": "^1.2.1",
-    "core-js": "^3.6.5",
     "font-awesome": "^4.7.0",
     "jquery": "^3.5.1",
     "moment": "^2.27.0",
+    "pinia": "^2.0.18",
     "popper.js": "^1.16.1",
     "socket.io-client": "^4.0.0",
-    "ts-loader": "^8.2.0",
+    "vite": "^3.0.7",
+    "vite-plugin-vue2": "^2.0.2",
     "vue": "2.7.8",
     "vue-router": "^3.3.4",
     "vue-scrollto": "^2.18.1",
     "vue-session": "^1.0.0",
-    "vue-the-mask": "^0.11.1",
-    "webpack": "5.40.0"
+    "vue-template-compiler": "2.7.8",
+    "vue-the-mask": "^0.11.1"
   },
   "devDependencies": {
     "@typescript-eslint/eslint-plugin": "^5.33.0",
     "@typescript-eslint/parser": "^5.33.0",
-    "@vue/cli-plugin-babel": "~4.4.0",
-    "@vue/cli-plugin-eslint": "~4.4.0",
-    "@vue/cli-plugin-typescript": "^5.0.8",
-    "@vue/cli-service": "~4.4.0",
     "@vue/eslint-config-typescript": "^11.0.0",
-    "babel-eslint": "^10.1.0",
-    "eslint": "^6.7.2",
-    "eslint-plugin-vue": "^9.3.0",
-    "typescript": "^4.7.4",
-    "vue-template-compiler": "^2.6.11"
+    "eslint": "8",
+    "eslint-plugin-vue": "8",
+    "typescript": "^4.7.4"
   },
   "eslintConfig": {
     "root": true,
     "env": {
-      "node": true
+      "es2021": true
     },
     "extends": [
       "plugin:vue/essential",
       "eslint:recommended"
     ],
-    "parserOptions": {
-      "parser": "babel-eslint"
-    },
     "rules": {
-      "@typescript-eslint/no-loss-of-precision": "off"
+      "@typescript-eslint/no-loss-of-precision": "off",
+      "vue/multi-word-component-names": "off"
     }
   },
   "browserslist": [
