@@ -1,4 +1,4 @@
-import env from "@/common/ws-routes";
+import customerApi from "@/common/CustomerService";
 
 export default {
   data() {
@@ -48,7 +48,7 @@ export default {
     },
     async createCustomer() {
       try {
-        await this.$http.post(env.WS.CUSTOMER.BASE, this.customer);
+        await customerApi.createCustomer(this.customer);
 
         this.customer.name = "";
         this.$bvToast.toast("Cliente adicionado com sucesso.", {
@@ -73,9 +73,7 @@ export default {
       }
     },
     async fetchCustomers(companyId) {
-      const customers = await this.$http.get(
-        env.WS.COMPANY.CUSTOMERS(companyId)
-      );
+      const customers = await customerApi.fetchCustomers(companyId);
 
       if (Array.isArray(customers)) {
         customers.forEach((customer) => {

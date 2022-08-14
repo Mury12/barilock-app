@@ -1,4 +1,4 @@
-import env from "@/common/ws-routes";
+import companyApi from "@/common/CompanyService";
 
 export default {
   data() {
@@ -16,13 +16,12 @@ export default {
         .map((_, i) => i + 1);
     },
     async fetchCompanies() {
-      const companies = await this.$http.get(env.WS.COMPANY.BASE);
+      const companies = await companyApi.fetchCompanies();
       this.companies = companies;
       if (!this.selectedCompany) this.selectCompany(companies[0]);
     },
     async fetchProducts(companyId) {
-      this.products =
-        (await this.$http.get(env.WS.COMPANY.MENU(companyId))) || [];
+      this.products = await companyApi.fetchProducts(companyId);
     },
   },
 };
