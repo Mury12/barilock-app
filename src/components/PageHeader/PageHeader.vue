@@ -16,7 +16,7 @@
             dropleft
           >
             <template v-slot:button-content>
-              <fas icon="caret-down" class="text-white" />
+              <fa-icon icon="caret-down" class="text-white" />
             </template>
             <b-dropdown-item href="#" @click="alterSelfData"
               >Alterar seus dados</b-dropdown-item

@@ -1,6 +1,6 @@
 <template>
   <transition mode="out-in" name="fade">
-    <div class="overlayer" v-if="isShowing">
+    <div class="TheLoader" v-if="isShowing">
       <b-row class="justify-content-center">
         <b-col cols="12" class="text-center">
           <b-spinner></b-spinner>
@@ -13,7 +13,7 @@
 
 <script>
 export default {
-  name: "Overlayer",
+  name: "TheLoader",
   data() {
     return {
       isShowing: false,
@@ -41,7 +41,7 @@ export default {
 </script>
 
 <style scoped>
-.overlayer {
+.TheLoader {
   position: fixed;
   height: 100%;
   width: 100%;

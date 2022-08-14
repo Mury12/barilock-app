@@ -21,7 +21,7 @@
           :to="item.uri"
         >
           <div class="text-left my-2">
-            <fas
+            <fa-icon
               :icon="item.icon || 'project-diagram'"
               class="text-white link-icon"
             />
@@ -36,7 +36,7 @@
       class="shrink-icon d-flex align-items-center justify-content-center"
       @click="navbarShrink"
     >
-      <fas
+      <fa-icon
         icon="caret-left"
         class="fa-2x text-white"
         :class="{ rotate: !navbar.isOpen }"
@@ -45,7 +45,7 @@
     <div id="sidebar-logout" class="text-white default-transition">
       <b-row class="justify-content-left text-left pl-3 py-2" @click="logout">
         <b-col cols="1">
-          <fas icon="power-off" />
+          <fa-icon icon="power-off" />
         </b-col>
         <b-col cols="10" v-show="navbar.isOpen">Sair</b-col>
       </b-row>

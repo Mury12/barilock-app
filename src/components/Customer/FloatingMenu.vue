@@ -21,7 +21,7 @@
           style="width: 100px"
           @click="canAdd ? $emit('add') : null"
         >
-          <fas icon="plus-circle" class="fa-2x text-success" /><br />
+          <fa-icon icon="plus-circle" class="fa-2x text-success" /><br />
         </div>
         <div
           class="
@@ -38,7 +38,7 @@
           style="width: 100px"
           @click="canRemove ? $emit('remove') : null"
         >
-          <fas icon="minus-circle" class="fa-2x text-danger" /><br />
+          <fa-icon icon="minus-circle" class="fa-2x text-danger" /><br />
         </div>
       </div>
     </transition>
@@ -57,7 +57,7 @@
       style="width: 50px; height: 50px"
       @click="show = !show"
     >
-      <fas icon="cog" class="fa-2x" />
+      <fa-icon icon="cog" class="fa-2x" />
     </div>
   </div>
 </template>

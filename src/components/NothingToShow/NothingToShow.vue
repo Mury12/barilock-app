@@ -9,7 +9,7 @@
         >{{starting ? randomThought : 'Também estou ansiosa pelas novidades!'}}</p>
         <img src="../../assets/logobot.png" class="fa-4x" width=100 />
       </div>
-      <fas :icon="icon" class="fa-4x nothing-icon" v-else />
+      <fa-icon :icon="icon" class="fa-4x nothing-icon" v-else />
     </b-col>
   </b-row>
 </template>

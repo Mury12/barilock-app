@@ -11,7 +11,7 @@
             <b-col cols="6" class="_mob-menu-item my-2" v-for="(item,idx) in items" :key="idx">
               <router-link class="no-decoration text-black" :to="item.uri">
                 <b-card class="text-black">
-                  <fas :icon="item.icon" />
+                  <fa-icon :icon="item.icon" />
                   <br />
                   {{item.name}}
                 </b-card>
@@ -20,7 +20,7 @@
             <b-col cols="6" class="_mob-menu-item my-2" @click="logout">
               <router-link class="no-decoration text-black" to="#">
                 <b-card class="text-black">
-                  <fas icon="power-off" />
+                  <fa-icon icon="power-off" />
                   <br />Sair
                 </b-card>
               </router-link>
@@ -55,4 +55,3 @@ export default {
   height: 100px;
 }
 </style>
-
