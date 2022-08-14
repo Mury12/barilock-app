@@ -33,8 +33,8 @@
   export default {
     data() {
       return {
-        username: "Anyname",
-        password: "Anypass",
+        username: "mury",
+        password: "jujuba",
         request: {
           success: false,
           msg: "",
@@ -62,7 +62,7 @@
         } finally {
           this.request.requested = true;
           this.$root.onRequest = false;
-          this.$util.toast(this.request.msg, {
+          this.$bvToast.toast(this.request.msg, {
             title: "Mensagem",
             autoHideDelay: 5000,
             appendToast: false,

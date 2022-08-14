@@ -1,4 +1,4 @@
-import env from "../../ws-routes";
+import orderApi from "@/common/OrderService";
 
 export default {
   data() {
@@ -12,23 +12,20 @@ export default {
   },
   methods: {
     async addItem(orderId) {
-      if (this.order.menuItemId && this.order.amount >= 1) {
-        await this.$http.post(env.WS.ORDER.BYID(orderId), this.order);
+      try {
+        await orderApi.addItem(orderId, this.order);
         this.$bvToast.toast("Item adicionado", {
           variant: "success",
         });
-      } else {
-        this.$bvToast.toast("Precisa selecionar um item.", {
+      } catch (error) {
+        this.$bvToast.toast(error.message, {
           variant: "danger",
         });
       }
     },
     async closeOrder(customer) {
       try {
-        await this.$http.put(env.WS.ORDER.BYID(customer.order.id), {
-          status: "closed",
-          paid: this.orderIsPaid,
-        });
+        await orderApi.closeOrder(customer);
 
         this.$bvToast.toast(
           `Comanda nº ${customer.order.id} de ${

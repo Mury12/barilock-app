@@ -1,4 +1,4 @@
-import env from "../../ws-routes";
+import env from "@/common/ws-routes";
 
 export default {
   data() {

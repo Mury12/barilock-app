@@ -1,5 +1,5 @@
 import { AxiosClient } from "./AxiosClient";
-import { ws } from "@/../ws-routes";
+import { ws } from "@/common/ws-routes";
 import { LocalStorage } from "./LocalStorage";
 
 class ApiClient extends AxiosClient {
