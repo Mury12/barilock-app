@@ -15,28 +15,39 @@
         <p>Mesa: {{ customer.tableNum }}</p>
         <p>Cliente: {{ customer.name }}</p>
         <p>ID da comanda: {{ customer.order.id }}</p>
-        <p>Estado: {{ customer.order.status }}</p>
-        <p>Horário: {{ customer.order.createdAt }}</p>
-        <p>Ultimo pedido: {{ customer.order.updatedAt || "-" }}</p>
-        <p>Total: R${{ customer.order.totalPrice }}</p>
+        <p>Estado: <order-status :status="customer.order.status" /></p>
+        <p>Abertura: {{ date(customer.order.createdAt) }}</p>
+        <p>Ultimo pedido: {{ date(customer.order.updatedAt) }}</p>
+        <p>Total: {{ currency }} {{ customer.order.totalPrice }}</p>
       </b-col>
       <b-col cols="6">
         <h4>Itens na comanda</h4>
-        <div class="order-item">
+        <div class="order-table">
           <b-table
             responsive
             striped
             hover
             :items="customer.order.items"
+            sticky-header
             :fields="['name', 'amount', 'price', 'total', 'status']"
           >
+            <template #cell(price)="row">
+              {{ currency }} {{ row.item.price }}
+            </template>
+            <template #cell(total)="row">
+              {{ currency }} {{ row.item.total }}
+            </template>
           </b-table>
         </div>
 
         <h5>Adicionar item</h5>
         <b-form @submit.prevent="$emit('submit', customer.order.id)">
-          <b-select value="0" :options="getOptions" v-model="order.menuItemId">
-            <option value="0" selected disabled>Selecione um item</option>
+          <b-select
+            value="null"
+            :options="getOptions"
+            v-model="order.menuItemId"
+          >
+            <option value="null" selected disabled>Selecione um item</option>
           </b-select>
           <label for="amount">Quantidade</label>
           <b-input
@@ -54,38 +65,56 @@
 </template>
 
 <script>
-export default {
-  name: "OrderModal",
-  data() {
-    return {};
-  },
-  props: {
-    customer: {
-      type: Object,
-      default: undefined,
+  import { mapStores } from "pinia";
+  import { useMainStore } from "@/store";
+  import { date, status } from "@/common/helpers";
+  import OrderStatus from "../OrderStatus.vue";
+
+  export default {
+    name: "OrderModal",
+    components: { OrderStatus },
+    data() {
+      return {};
     },
-    products: {
-      type: Array,
-      default: () => [],
+    props: {
+      customer: {
+        type: Object,
+        default: undefined,
+      },
+      products: {
+        type: Array,
+        default: () => [],
+      },
+      order: {
+        type: Object,
+        default: () => ({
+          menuItemId: null,
+          amount: 1,
+        }),
+      },
     },
-    order: {
-      type: Object,
-      default: () => ({
-        menuItemId: null,
-        amount: 1,
-      }),
+    methods: {
+      date,
+      status,
     },
-  },
-  computed: {
-    getOptions() {
-      return this.products.map((p) => ({
-        value: p.id,
-        text: `${p.product.name} - R$ ${p.price}`,
-      }));
+    computed: {
+      ...mapStores(useMainStore),
+      getOptions() {
+        return this.products.map((p) => ({
+          value: p.id,
+          text: `${p.product.name} - R$ ${p.price}`,
+        }));
+      },
+      currency() {
+        return this.mainStore.getCurrency;
+      },
     },
-  },
-};
+  };
 </script>
 
 <style>
+  .order-table {
+    max-height: 350px;
+    overflow-y: auto;
+  }
 </style>
