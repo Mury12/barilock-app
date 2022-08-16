@@ -26,7 +26,7 @@ class OrderService extends AxiosClient {
   async closeOrder(customer: Customer, paid: boolean) {
     await this.put(ws.ORDER.BYID(customer.order.id), {
       status: "closed",
-      paid: paid,
+      paid: +paid,
     });
   }
 }

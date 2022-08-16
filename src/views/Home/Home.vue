@@ -5,7 +5,12 @@
       <b-row>
         <b-col cols="12">
           <h2>Menu</h2>
-          <b-button variant="link"> Comandas fechadas</b-button>
+          <b-button
+            variant="link"
+            @click="showClosedOrders = !showClosedOrders"
+          >
+            Comandas fechadas</b-button
+          >
         </b-col>
         <b-col cols="12">
           <h4>Meus Bares</h4>
@@ -26,7 +31,10 @@
         </b-col>
       </b-row>
     </b-col>
-    <b-col cols="9" class="tables">
+    <b-col cols="9" v-if="showClosedOrders && selectedCompany">
+      <closed-orders />
+    </b-col>
+    <b-col cols="9" class="tables" v-else>
       <customer-container :company="selectedCompany" />
     </b-col>
   </div>
@@ -34,17 +42,19 @@
 
 <script>
   import CustomerContainer from "../../components/Customer/CustomerContainer.vue";
+  import ClosedOrders from "@/components/ClosedOrders.vue";
   import companies from "../../mixins/companies";
   import { mapStores } from "pinia";
   import { useMainStore } from "../../store/index";
 
   export default {
     name: "Home",
-    components: { CustomerContainer },
+    components: { CustomerContainer, ClosedOrders },
     mixins: [companies],
     data() {
       return {
         showingMenu: false,
+        showClosedOrders: false,
       };
     },
     computed: {

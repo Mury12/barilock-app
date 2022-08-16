@@ -13,9 +13,12 @@ class CustomerService extends AxiosClient {
     await this.post(ws.CUSTOMER.BASE, customer);
   }
 
-  async fetchCustomers(companyId: number) {
+  async fetchCustomers(companyId: number, status: "open" | "closed" = "open") {
     const { data: customers } = await this.get<Customer[]>(
-      ws.COMPANY.CUSTOMERS(companyId)
+      ws.COMPANY.CUSTOMERS(companyId),
+      {
+        params: { status },
+      }
     );
     return customers;
   }

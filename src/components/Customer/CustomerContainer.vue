@@ -38,6 +38,7 @@
       :companyId="+company.id"
       @created="fetchCustomers"
     />
+
     <b-modal hide-footer id="close-order-modal" title="Encerrar comanda">
       <b-checkbox name="order-paid" v-model="orderIsPaid"
         >Esta comanda foi paga</b-checkbox
@@ -77,11 +78,6 @@
       MenuButton,
     },
     mixins: [customers, orders, companies],
-    data() {
-      return {
-        orderIsPaid: true,
-      };
-    },
     props: {
       company: {
         type: Object,

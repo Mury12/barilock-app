@@ -1,4 +1,5 @@
 import orderApi from "@/common/OrderService";
+import customerApi from "@/common/CustomerService";
 
 export default {
   data() {
@@ -8,6 +9,8 @@ export default {
         amount: 1,
       },
       openOrderAfterInsert: true,
+      orderIsPaid: true,
+      orders: [],
     };
   },
   methods: {
@@ -25,7 +28,7 @@ export default {
     },
     async closeOrder(customer) {
       try {
-        await orderApi.closeOrder(customer);
+        await orderApi.closeOrder(customer, this.orderIsPaid);
 
         this.$bvToast.toast(
           `Comanda nº ${customer.order.id} de ${
@@ -46,6 +49,10 @@ export default {
           title: "Erro",
         });
       }
+    },
+    async fetchClosedOrders(companyId) {
+      const orders = await customerApi.fetchCustomers(companyId, "closed");
+      if (Array.isArray(orders)) this.orders.push(...orders);
     },
   },
 };
