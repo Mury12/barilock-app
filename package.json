@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "vite --port 8080",
+    "dev": "vite --port 8080 --host 0.0.0.0",
     "build": "vite build",
     "serve": "vite preview --port 8080",
     "lint": "eslint --ext .js,.vue --ignore-path .gitignore --fix src"
@@ -16,6 +16,7 @@
     "@vue/cli-plugin-babel": "^5.0.8",
     "axios": "^0.19.2",
     "bootstrap-vue": "^2.15.0",
+    "chart.js": "^4.3.0",
     "colorette": "^1.2.1",
     "font-awesome": "^4.7.0",
     "jquery": "^3.5.1",
@@ -26,6 +27,7 @@
     "vite": "^3.0.7",
     "vite-plugin-vue2": "^2.0.2",
     "vue": "2.7.8",
+    "vue-chartjs": "^5.2.0",
     "vue-router": "^3.3.4",
     "vue-scrollto": "^2.18.1",
     "vue-session": "^1.0.0",

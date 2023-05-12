@@ -2,14 +2,16 @@ import Vue from "./prototype";
 import VueRouter from "vue-router";
 import Home from "./views/Home/Home";
 import Login from "./views/Login/Login";
+import SocketDataVue from "./views/Home/components/SocketData.vue";
+
 let routes = [
   /** Auth needed (add meta.protected = true) */
   {
     path: "/home",
     name: "Home",
-    component: Home,
+    component: SocketDataVue,
     meta: {
-      protected: true,
+      protected: false,
       title: "Início",
     },
   },
